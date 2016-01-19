@@ -4,7 +4,7 @@
   "description": "Minio Browser",
   "scripts": {
     "build": "webpack",
-    "dev": "webpack-dev-server --devtool eval --progress --colors --hot --content-base dist"
+    "dev": "webpack-dev-server --devtool eval --progress --colors --hot --content-base dist --history-api-fallback"
   },
   "repository": {
     "type": "git",
