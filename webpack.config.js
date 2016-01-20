@@ -25,6 +25,9 @@ module.exports = {
         test: /\.less$/,
         loader: 'style!css!less'
       }, {
+        test: /\.css$/,
+        loader: 'style!css'
+      }, {
         test: /\.(eot|woff|woff2|ttf|svg)/,
         loader: 'url'
       }]
@@ -32,8 +35,10 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin([
       {from: 'bower_components/jquery/dist/jquery.min.js'},
+      {from: 'bower_components/jquery-ui/jquery-ui.min.js'},
+      {from: 'bower_components/jQuery-contextMenu/dist/jquery.contextMenu.min.js'},
       {from: 'bower_components/bootstrap/dist/js/bootstrap.min.js'},
-      {from: 'app/js/jquery.contextMenu.js'}
+      {from: 'app/js/functions.js'}
     ])
   ]
 }
