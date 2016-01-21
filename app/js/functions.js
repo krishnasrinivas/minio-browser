@@ -35,6 +35,9 @@ $(document).ready(function() {
                 Selectable
             ----------------------------*/
             $('.selectable').selectable();
+            $('.selectable').selectable({
+            cancel: '.dropdown'
+            });
         }
 
     })

@@ -1,10 +1,17 @@
 import React from 'react'
+import { connect } from 'react-redux'
 
 import logo from '../../img/logo.svg'
 import auth from '../auth.js'
 
-const BucketList = ({ buckets, selectBucket }) => {
-  const list = buckets.map((bucket, i) => <li key={i} onClick={(e) => selectBucket(e, bucket)}><a href="">{bucket}</a></li>)
+import * as actions from '../actions'
+
+let BucketList = ({ buckets, currentBucket, setCurrentBucket }) => {
+  // console.log(this.props)
+  const list = buckets.map((bucket, i) => {
+    const active = bucket === currentBucket ? 'active' : ''
+    return <li className={active} key={i} onClick={(e) => setCurrentBucket(e, bucket)}><a href="">{bucket}</a></li>
+  })
   return (
     <div className="fes-list">
         <ul>
@@ -13,16 +20,47 @@ const BucketList = ({ buckets, selectBucket }) => {
     </div>
   )
 }
+BucketList = connect(state => state)(BucketList)
+
+let ObjectsList = ({objects, selectObject, shareObject }) => {
+  const list = objects.map((object, i) => {
+    return (
+      <div key={i} className="fesl-row">
+          <div className="fesl-item" data-type={object.type}><a href="" onClick={(e) => selectObject(e, object)}>{object.name}</a></div>
+          <div className="fesl-item">{object.type}</div>
+          <div className="fesl-item">{object.size} GB</div>
+          <div className="fesl-item">{object.lastModified}</div>
+          <div className="fesl-item dropdown">
+            <a href="" data-toggle="dropdown">
+            <i className="fa fa-hdd-o"></i>
+            </a>
+
+            <ul className="dropdown-menu">
+            <li><a href="" onClick={e => shareObject(e, object)}>Share</a></li>
+            </ul>
+          </div>
+      </div>
+    )
+  })
+  return (
+    <div>{list}</div>
+  )
+}
+ObjectsList = connect(state => state)(ObjectsList)
 
 export default class Browse extends React.Component {
-  constructor() {
-    super()
-    this.state = {
-      buckets: ['aaaaa', 'bbbbb', 'cccc']
-    }
-  }
-  selectBucket(e, bucket) {
+  setCurrentBucket(e, bucket) {
     e.preventDefault()
+    if (bucket == this.props.currentBucket) return
+    this.props.dispatch(actions.setCurrentBucket(bucket))
+  }
+  selectObject(e, object) {
+    e.preventDefault()
+    console.log('select', object)
+  }
+  shareObject(e, object) {
+    e.preventDefault()
+    console.log('share', object)
   }
   logout() {
     auth.logout(() => {
@@ -38,7 +76,7 @@ export default class Browse extends React.Component {
                   <h2 className="fe-h2">Minio Browser</h2>
               </div>
 
-              <BucketList buckets={this.state.buckets} selectBucket={this.selectBucket.bind(this)} />
+              <BucketList setCurrentBucket={this.setCurrentBucket.bind(this)} />
 
               <div className="fes-host">
                   <i className="fa fa-globe"></i> 192.168.200.205
@@ -61,107 +99,8 @@ export default class Browse extends React.Component {
                   </header>
               </div>
 
-              <div className="feb-container selectable">
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="folder">Auto Uploader</div>
-                      <div className="fesl-item">Folder</div>
-                      <div className="fesl-item">2.4 GB</div>
-                      <div className="fesl-item">05-10-2015</div>
-
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="folder">Backup 234718</div>
-                      <div className="fesl-item">Folder</div>
-                      <div className="fesl-item">1.2 GB</div>
-                      <div className="fesl-item">11-02-2014</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="folder">Uploads</div>
-                      <div className="fesl-item">Folder</div>
-                      <div className="fesl-item">900MB</div>
-                      <div className="fesl-item">01-01-2011</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="pdf">summerize_2.pdf</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">23MB</div>
-                      <div className="fesl-item">10-10-2013</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="zip">Amet_Sollicitudin_Tellus.zip</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">0.78MB</div>
-                      <div className="fesl-item">01-09-2010</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="audio">Vestibulum_Malesuada.wav</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">0.54MB</div>
-                      <div className="fesl-item">22-08-2010</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="code">auth.py</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">0.002MB</div>
-                      <div className="fesl-item">01-07-2009</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="excel">Nibh_Ligula_Cursususce.xls</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">2MB</div>
-                      <div className="fesl-item">31-06-2009</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="image">sitpurus_tellus.jpeg</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">0.1MB</div>
-                      <div className="fesl-item">09-04-2009</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="movie">sentation_2002.mkv</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">1.4GB</div>
-                      <div className="fesl-item">06-04-2009</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="other">login_logs.xml</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">0.4MB</div>
-                      <div className="fesl-item">29-03-2009</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="presentation">Pharetra.ppt</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">10MB</div>
-                      <div className="fesl-item">28-03-2009</div>
-                  </div>
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="audio">enean_psum_ibendum.mp3</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">5.3MB</div>
-                      <div className="fesl-item">28-03-2009</div>
-                  </div>
-
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="text">mattistisus.txt</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">0.05MB</div>
-                      <div className="fesl-item">12-01-2009</div>
-                  </div>
-
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="movie">dapibus_ondimentum.mp4</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">732MB</div>
-                      <div className="fesl-item">18-09-2008</div>
-                  </div>
-
-                  <div className="fesl-row">
-                      <div className="fesl-item" data-type="doc">bibendum.doc</div>
-                      <div className="fesl-item">File</div>
-                      <div className="fesl-item">0.01MB</div>
-                      <div className="fesl-item">02-09-2008</div>
-                  </div>
+              <div className="feb-container">
+                <ObjectsList selectObject={this.selectObject.bind(this)} shareObject={this.shareObject.bind(this)}/>
               </div>
 
               <div className="dropup feb-actions">
