@@ -1,4 +1,9 @@
+import web from './web'
+
+export const SET_WEB = 'SET_WEB'
 export const SET_CURRENT_BUCKET = 'SET_CURRENT_BUCKET'
+export const SET_CURRENT_PATH = 'SET_CURRENT_PATH'
+export const SET_BUCKETS = 'SET_BUCKETS'
 export const SET_OBJECTS = 'SET_OBJECTS'
 // export const SHARE_OBJECT = 'SHARE_OBJECT'
 
@@ -9,19 +14,57 @@ let objects = [{name: 'aaaa', type: 'folder', size: '20 MB', lastModified: '28-0
                {name: 'eeee', type: 'text', size: '20 MB', lastModified: '28-03-2009'},
                {name: 'ffff', type: 'text', size: '20 MB', lastModified: '28-03-2009'}]
 
-export const setCurrentBucket = (currentBucket) => {
-  return dispatch => {
-    dispatch({type: SET_CURRENT_BUCKET, currentBucket})
-    dispatch({type: SET_OBJECTS, objects: objects.map(object => {
-      return Object.assign({}, object, {name: `${currentBucket}-${object.name}`})
-    })})
+export const setWeb = web => {
+  return {
+    type: SET_WEB,
+    web
   }
 }
 
-// export const selectObject = (objectBaseName) => {
-//   return {type: SELECT_OBJECT, objectBaseName}
-// }
-//
-// export const shareObject = (objectBaseName) => {
-//   return {type: SHARE_OBJECT, objectBaseName}
-// }
+export const setBuckets = buckets => {
+  return {
+    type: SET_BUCKETS,
+    buckets
+  }
+}
+
+export const setObjects = objects => {
+  return {
+    type: SET_OBJECTS,
+    objects
+  }
+}
+
+export const setCurrentBucket = currentBucket => {
+  return {
+    type: SET_CURRENT_BUCKET,
+    currentBucket
+  }
+}
+
+export const setCurrentPath = currentPath => {
+  return {
+    type: SET_CURRENT_PATH,
+    currentPath
+  }
+}
+
+export const selectBucket = (currentBucket) => {
+  return (dispatch, getState) => {
+    let web = getState().web
+    dispatch(setCurrentBucket(currentBucket))
+    dispatch(setCurrentPath(''))
+    web.ListObjects({bucketName: currentBucket})
+      .then(objects => dispatch(setObjects(objects)))
+  }
+}
+
+export const selectPrefix = prefix => {
+  return (dispatch, getState) => {
+    const { currentBucket, web } = getState()
+    web.ListObjects({bucketName: currentBucket, prefix})
+      .then(objects => objects.map(object => {object.name = object.name.replace(`${prefix}`, ''); return object}))
+      .then(objects => dispatch(setObjects(objects)))
+      .then(dispatch(setCurrentPath(prefix)))
+  }
+}

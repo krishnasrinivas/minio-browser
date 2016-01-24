@@ -1,15 +1,15 @@
-import React from 'react'
+import React, { PropTypes } from 'react'
 import logo from '../../img/logo.svg'
 
 import auth from '../auth.js'
-
 export default class Login extends React.Component {
   handleSubmit(event) {
     event.preventDefault()
-    auth.login(this.refs.accessKey.value, this.refs.secretKey.value, (logggedIn) => {
-      if (!logggedIn) return console.log('unable to login')
-      this.props.history.pushState(null, '/browse')
-    })
+    const { web } = this.props
+    web.Login({username: this.refs.accessKey.value, password: this.refs.secretKey.value})
+      .then((res) => {
+        this.props.history.pushState(null, '/browse')
+      })
   }
   render() {
     return (

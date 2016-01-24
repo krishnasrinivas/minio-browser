@@ -10,18 +10,25 @@ import { createStore, applyMiddleware } from 'redux'
 import { Route, Router } from 'react-router'
 import { Provider, connect } from 'react-redux'
 
-import auth from './js/auth.js'
+import * as actions from './js/actions.js'
 import reducer from './js/reducers.js'
 
-import Login from './js/components/Login.js'
+import _Login from './js/components/Login.js'
 import _Browse from './js/components/Browse.js'
 
-let store =  applyMiddleware(thunkMiddleware)(createStore)(reducer)
+import Web from './js/web'
+window.Web = Web
 
+let store =  applyMiddleware(thunkMiddleware)(createStore)(reducer)
+window.store = store
 let Browse = connect(state => state)(_Browse)
+let Login = connect(state => state)(_Login)
+let web = new Web('http://localhost:9001/rpc')
+window.web = web
+store.dispatch(actions.setWeb(web))
 
 function authNeeded(nextState, replace) {
-  if (!auth.loggedIn()) {
+  if (!web.LoggedIn()) {
     replace(
       nextState,
       '/'
@@ -31,7 +38,7 @@ function authNeeded(nextState, replace) {
 }
 
 function authNotNeeded(nextState, replace) {
-  if (auth.loggedIn()) {
+  if (web.LoggedIn()) {
     replace(
       nextState,
       '/browse'
@@ -41,7 +48,7 @@ function authNotNeeded(nextState, replace) {
 }
 
 ReactDOM.render((
-  <Provider store={store}>
+  <Provider store={store} web={web}>
     <Router history={createBrowserHistory()}>
       <Route path='/' component={Login} onEnter={authNotNeeded} />
       <Route path='/browse' component={Browse} onEnter={authNeeded} />
