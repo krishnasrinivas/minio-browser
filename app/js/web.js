@@ -32,7 +32,7 @@ export default class Web {
     return !!localStorage.token
   }
   Login(args) {
-    return this.makeCall("Login", args)
+    return this.makeCall('Login', args)
                 .then(res => {
                   localStorage.token = `${res.token}`
                   return res
@@ -42,12 +42,15 @@ export default class Web {
     delete(localStorage.token)
   }
   ListBuckets() {
-    return this.makeCall("ListBuckets")
+    return this.makeCall('ListBuckets')
   }
   ListObjects(args) {
-    return this.makeCall("ListObjects", args)
+    return this.makeCall('ListObjects', args)
   }
   GetObjectURL(args) {
-    return this.makeCall("GetObjectURL", args)
+    return this.makeCall('GetObjectURL', args)
+  }
+  MakeBucket(args) {
+    return this.makeCall('MakeBucket', args)
   }
 }
