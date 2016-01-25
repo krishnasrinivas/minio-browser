@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import humanize from 'humanize'
 
 import logo from '../../img/logo.svg'
 import auth from '../auth.js'
@@ -24,6 +25,7 @@ BucketList = connect(state => state)(BucketList)
 let ObjectsList = ({objects, currentPath, selectPrefix, shareObject }) => {
   const list = objects.map((object, i) => {
     let size = object.name.endsWith('/') ? '' : object.size
+    size = humanize.filesize(size)
     return (
       <div key={i} className="fesl-row">
           <div className="fesl-item" data-type={object.type}><a href="" onClick={(e) => selectPrefix(e, `${currentPath}${object.name}`)}>{object.name}</a></div>
