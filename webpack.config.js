@@ -5,8 +5,8 @@ var CopyWebpackPlugin = require('copy-webpack-plugin')
 module.exports = {
   context: __dirname,
   entry: [
-    'webpack/hot/dev-server',
-    'webpack-dev-server/client?http://localhost:8080',
+    // 'webpack/hot/dev-server',
+    // 'webpack-dev-server/client?http://localhost:8080',
     path.resolve(__dirname, 'app/index.js')
   ],
   output: {
@@ -38,7 +38,8 @@ module.exports = {
       {from: 'bower_components/jquery-ui/jquery-ui.min.js'},
       {from: 'bower_components/jQuery-contextMenu/dist/jquery.contextMenu.min.js'},
       {from: 'bower_components/bootstrap/dist/js/bootstrap.min.js'},
-      {from: 'app/js/functions.js'}
+      {from: 'app/js/functions.js'},
+      {from: 'app/index.html'}
     ])
   ]
 }
