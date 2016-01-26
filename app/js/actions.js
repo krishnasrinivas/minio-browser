@@ -4,6 +4,7 @@ export const SET_WEB = 'SET_WEB'
 export const SET_CURRENT_BUCKET = 'SET_CURRENT_BUCKET'
 export const SET_CURRENT_PATH = 'SET_CURRENT_PATH'
 export const SET_BUCKETS = 'SET_BUCKETS'
+export const SET_VISIBLE_BUCKETS = 'SET_VISIBLE_BUCKETS'
 export const SET_OBJECTS = 'SET_OBJECTS'
 // export const SHARE_OBJECT = 'SHARE_OBJECT'
 
@@ -28,7 +29,14 @@ export const setBuckets = buckets => {
   }
 }
 
-export const setObjects = objects => {
+export const setVisibleBuckets = visibleBuckets => {
+  return {
+    type: SET_VISIBLE_BUCKETS,
+    visibleBuckets
+  }
+}
+
+export const setObjects = (objects) => {
   return {
     type: SET_OBJECTS,
     objects
@@ -55,13 +63,17 @@ export const selectBucket = (currentBucket) => {
     dispatch(setCurrentBucket(currentBucket))
     dispatch(setCurrentPath(''))
     web.ListObjects({bucketName: currentBucket})
-      .then(objects => dispatch(setObjects(objects)))
+      .then(objects => {
+        if (!objects) objects = []
+        dispatch(setObjects(objects))
+      })
   }
 }
 
 export const selectPrefix = prefix => {
   return (dispatch, getState) => {
-    const { currentBucket, web } = getState()
+    const { currentBucket, currentPath, web } = getState()
+    if (prefix === currentPath) return
     web.ListObjects({bucketName: currentBucket, prefix})
       .then(objects => objects.map(object => {object.name = object.name.replace(`${prefix}`, ''); return object}))
       .then(objects => dispatch(setObjects(objects)))

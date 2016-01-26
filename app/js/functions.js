@@ -42,5 +42,21 @@ $(document).ready(function() {
 
     })
 
+    /* -----------------------------
+        Scrollbar
+     -------------------------------*/
+    function scrollBar(selector, theme, mousewheelaxis) {
+        $(selector).mCustomScrollbar({
+            theme: theme,
+            scrollInertia: 100,
+            axis:'y',
+            mouseWheel: {
+                enable: true,
+                axis: mousewheelaxis,
+                preventDefault: true
+            }
+        });
+    }
 
+    scrollBar('.fe-scroll-list', 'minimal-dark', 'y');
 });
