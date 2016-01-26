@@ -8,28 +8,33 @@ import auth from '../auth.js'
 
 import * as actions from '../actions'
 
-let BucketList = ({ buckets, currentBucket, selectBucket }) => {
-  const list = buckets.map((bucket, i) => {
+let BucketList = ({ visibleBuckets, currentBucket, selectBucket, searchBuckets }) => {
+  // console.log(visibleBuckets)
+  const list = visibleBuckets.map((bucket, i) => {
     const active = bucket === currentBucket ? 'active' : ''
     return <li className={active} key={i} onClick={(e) => selectBucket(e, bucket)}><a href="">{bucket}</a></li>
   })
   return (
-    <div className="fes-list">
-        <ul>
-            {list}
-        </ul>
+    <div>
+      <div className="fesb-search">
+          <input type="text" onChange={searchBuckets} placeholder="Search Buckets..."/>
+          <i></i>
+      </div>
+      <ul>
+          {list}
+      </ul>
     </div>
   )
 }
 BucketList = connect(state => state)(BucketList)
 
-let ObjectsList = ({objects, currentPath, selectPrefix, shareObject }) => {
+let ObjectsList = ({objects, currentPath, selectPrefix, shareObject, dataType }) => {
   const list = objects.map((object, i) => {
     let size = object.name.endsWith('/') ? '' : humanize.filesize(object.size)
     let lastModified = object.name.endsWith('/') ? '' : Moment(object.lastModified).format('lll')
     return (
       <div key={i} className="fesl-row">
-          <div className="fesl-item" data-type={object.type}><a href="" onClick={(e) => selectPrefix(e, `${currentPath}${object.name}`)}>{object.name}</a></div>
+          <div className="fesl-item" data-type={dataType(object.name)}><a href="" onClick={(e) => selectPrefix(e, `${currentPath}${object.name}`)}>{object.name}</a></div>
           <div className="fesl-item">{size}</div>
           <div className="fesl-item">{lastModified}</div>
       </div>
@@ -46,13 +51,13 @@ let Path = ({currentBucket, currentPath, selectPrefix}) => {
   let path = currentPath.split('/').map((dir, i) => {
     dirPath.push(dir)
     let dirPath_ = dirPath.join('/') + '/'
-    return <li key={i}><a href="#" onClick={(e) => selectPrefix(e, dirPath_)}>{dir}</a></li>
+    return <span key={i}><a href="" onClick={(e) => selectPrefix(e, dirPath_)}>{dir}</a></span>
   })
   return (
-    <ul className="breadcrumb">
-      <li><a href="#" onClick={(e) => selectPrefix(e, '')}>{currentBucket}</a></li>
+    <h2 className="fe-h2">
+      <span className="main"><a onClick={(e) => selectPrefix(e, '')} href="">{currentBucket}</a></span>
       {path}
-    </ul>
+    </h2>
   )
 }
 Path = connect(state => state)(Path)
@@ -60,13 +65,32 @@ Path = connect(state => state)(Path)
 export default class Browse extends React.Component {
   componentDidMount() {
     const { web, dispatch } = this.props
+    $('.fe-scroll-list').mCustomScrollbar({
+        theme: 'minimal-dark',
+        scrollInertia: 100,
+        axis:'y',
+        mouseWheel: {
+            enable: true,
+            axis: 'y',
+            preventDefault: true
+        }
+    });
     web.ListBuckets().then(buckets => buckets.map(bucket => bucket.name))
-                      .then(buckets => dispatch(actions.setBuckets(buckets)))
+                      .then(buckets => {
+                        dispatch(actions.setBuckets(buckets))
+                        dispatch(actions.setVisibleBuckets(buckets))
+                      })
+
   }
   selectBucket(e, bucket) {
     e.preventDefault()
     if (bucket == this.props.currentBucket) return
     this.props.dispatch(actions.selectBucket(bucket))
+  }
+  searchBuckets(e) {
+    e.preventDefault()
+    let { buckets } = this.props
+    this.props.dispatch(actions.setVisibleBuckets(buckets.filter(bucket => bucket.indexOf(e.target.value) > -1)))
   }
   selectPrefix(e, prefix) {
     const { dispatch, currentPath, web, currentBucket } = this.props
@@ -86,6 +110,10 @@ export default class Browse extends React.Component {
     e.preventDefault()
     console.log('share', object)
   }
+  dataType(name) {
+    if (name.endsWith('/')) return 'folder'
+    return 'other'
+  }
   logout(e) {
     const { web, history } = this.props
     e.preventDefault()
@@ -100,23 +128,25 @@ export default class Browse extends React.Component {
                   <img src={logo} alt=""/>
                   <h2 className="fe-h2">Minio Browser</h2>
               </div>
-
-              <BucketList selectBucket={this.selectBucket.bind(this)} />
-
+              <div className="fes-list fe-scroll-list">
+                <BucketList searchBuckets={this.searchBuckets.bind(this)} selectBucket={this.selectBucket.bind(this)} />
+              </div>
               <div className="fes-host">
-                  <i className="fa fa-globe"></i> 192.168.200.205
+                  <i className="fa fa-globe"></i> {window.location.hostname}
               </div>
           </div>
 
           <div className="fe-body">
               <header className="fe-header">
-                  <button className="pull-right float btn-danger" onClick={this.logout.bind(this)}>Logout</button>
-                  <h2 className="fe-h2">Euismod Venenatis</h2>
-                  <p>34 Folders &nbsp;|&nbsp; 23567 Files</p>
+                  <Path selectPrefix={this.selectPrefix.bind(this)} />
+                  <ul className="feh-actions">
+                      <li>
+                          <a href="" onClick={this.logout.bind(this)}>
+                              <i className="fa fa-power-off"></i>
+                          </a>
+                      </li>
+                  </ul>
               </header>
-              <div className="feb-container">
-                <Path selectPrefix={this.selectPrefix.bind(this)} />
-              </div>
               <div className="feb-container">
                   <header className="fesl-row" data-type="folder">
                       <div className="fesl-item" data-sort="name">Name <i className="fesli-sort zmdi zmdi-sort-asc"></i></div>
@@ -126,7 +156,7 @@ export default class Browse extends React.Component {
               </div>
 
               <div className="feb-container">
-                <ObjectsList selectPrefix={this.selectPrefix.bind(this)} shareObject={this.shareObject.bind(this)}/>
+                <ObjectsList dataType={this.dataType.bind(this)} selectPrefix={this.selectPrefix.bind(this)} shareObject={this.shareObject.bind(this)}/>
               </div>
 
               <div className="dropup feb-actions">

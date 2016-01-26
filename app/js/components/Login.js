@@ -34,7 +34,9 @@ export default class Login extends React.Component {
                     <i></i><i></i>
                 </div>
             </div>
-            <button style={{visibility: 'hidden'}} type="submit">login</button>
+            <button className="btn btn-default" type="submit">
+              <i className="fa fa-sign-in"></i> Login
+            </button>
           </form>
         </div>
       </div>
@@ -43,7 +45,7 @@ export default class Login extends React.Component {
           <img src={logo} alt=""/>
       </a>
 
-      <div className="server-info">play.minio.io:9000</div>
+      <div className="server-info">{window.location.host}</div>
       </div>
       </div>
     )

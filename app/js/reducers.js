@@ -2,12 +2,13 @@ import * as actions from './actions'
 
 // state : {
 //   buckets:[]string,
+//   visibleBuckets:[]string,
 //   objects:[]{name, type, size, lastModified},
 //   currentBucket: string,
 //   currentPath: string
 // }
 
-export default (state = {buckets:[], objects:[], currentBucket: '', currentPath: ''}, action) => {
+export default (state = {buckets:[], visibleBuckets:[], objects:[], currentBucket: '', currentPath: ''}, action) => {
   var newState = Object.assign({}, state)
   switch(action.type) {
     case actions.SET_WEB:
@@ -15,6 +16,9 @@ export default (state = {buckets:[], objects:[], currentBucket: '', currentPath:
       break
     case actions.SET_BUCKETS:
       newState.buckets = action.buckets
+      break
+    case actions.SET_VISIBLE_BUCKETS:
+      newState.visibleBuckets = action.visibleBuckets
       break
     case actions.SET_CURRENT_BUCKET:
       newState.currentBucket = action.currentBucket
