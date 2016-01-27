@@ -2,14 +2,15 @@ import React from 'react'
 import { connect } from 'react-redux'
 import humanize from 'humanize'
 import Moment from 'moment'
+import Modal from 'react-bootstrap/lib/Modal'
+import ModalHeader from 'react-bootstrap/lib/ModalHeader'
+import ModalBody from 'react-bootstrap/lib/ModalBody'
 
 import logo from '../../img/logo.svg'
-import auth from '../auth.js'
 
 import * as actions from '../actions'
 
 let BucketList = ({ visibleBuckets, currentBucket, selectBucket, searchBuckets }) => {
-  // console.log(visibleBuckets)
   const list = visibleBuckets.map((bucket, i) => {
     const active = bucket === currentBucket ? 'active' : ''
     return <li className={active} key={i} onClick={(e) => selectBucket(e, bucket)}><a href="">{bucket}</a></li>
@@ -28,7 +29,7 @@ let BucketList = ({ visibleBuckets, currentBucket, selectBucket, searchBuckets }
 }
 BucketList = connect(state => state)(BucketList)
 
-let ObjectsList = ({objects, currentPath, selectPrefix, shareObject, dataType }) => {
+let ObjectsList = ({objects, currentPath, selectPrefix, dataType }) => {
   const list = objects.map((object, i) => {
     let size = object.name.endsWith('/') ? '' : humanize.filesize(object.size)
     let lastModified = object.name.endsWith('/') ? '' : Moment(object.lastModified).format('lll')
@@ -65,22 +66,30 @@ Path = connect(state => state)(Path)
 export default class Browse extends React.Component {
   componentDidMount() {
     const { web, dispatch } = this.props
-    $('.fe-scroll-list').mCustomScrollbar({
-        theme: 'minimal-dark',
-        scrollInertia: 100,
-        axis:'y',
-        mouseWheel: {
-            enable: true,
-            axis: 'y',
-            preventDefault: true
-        }
-    });
+    // $('.fe-scroll-list').mCustomScrollbar({
+    //     theme: 'minimal-dark',
+    //     scrollInertia: 100,
+    //     axis:'y',
+    //     mouseWheel: {
+    //         enable: true,
+    //         axis: 'y',
+    //         preventDefault: true
+    //     }
+    // });
     web.ListBuckets().then(buckets => buckets.map(bucket => bucket.name))
                       .then(buckets => {
                         dispatch(actions.setBuckets(buckets))
                         dispatch(actions.setVisibleBuckets(buckets))
                       })
-
+    web.DiskInfo().then(diskInfo => {
+      var diskInfo_ = Object.assign({}, {
+        total: diskInfo.Total,
+        free: diskInfo.Free,
+        fstype: diskInfo.FSType,
+      })
+      diskInfo_.used = diskInfo_.total - diskInfo_.free
+      dispatch(actions.setDiskInfo(diskInfo_))
+    })
   }
   selectBucket(e, bucket) {
     e.preventDefault()
@@ -102,13 +111,23 @@ export default class Browse extends React.Component {
         .then(res => window.location = res)
     }
   }
-  selectPath(e, dirPath) {
+  makeBucket(e) {
     e.preventDefault()
-    console.log(dirPath)
+    const bucketName = this.refs.makeBucketRef.value
+    this.refs.makeBucketRef.value = ''
+    const { web, dispatch } = this.props
+    this.hideMakeBucketModal()
+    web.MakeBucket({bucketName})
+       .then(() => dispatch(actions.addBucket(bucketName)))
   }
-  shareObject(e, object) {
+  hideMakeBucketModal() {
+    const { dispatch } = this.props
+    dispatch(actions.hideMakeBucketModal())
+  }
+  showMakeBucketModal(e) {
     e.preventDefault()
-    console.log('share', object)
+    const { dispatch } = this.props
+    dispatch(actions.showMakeBucketModal())
   }
   dataType(name) {
     if (name.endsWith('/')) return 'folder'
@@ -121,6 +140,8 @@ export default class Browse extends React.Component {
     history.pushState(null, '/')
   }
   render() {
+    const { total, free } = this.props.diskInfo
+    const showMakeBucketModal = this.props.showMakeBucketModal
     return (
       <div className="file-explorer">
           <div className="fe-sidebar">
@@ -139,6 +160,7 @@ export default class Browse extends React.Component {
           <div className="fe-body">
               <header className="fe-header">
                   <Path selectPrefix={this.selectPrefix.bind(this)} />
+                  <p>Total: {humanize.filesize(total)} &nbsp;|&nbsp; Free: {humanize.filesize(free)}</p>
                   <ul className="feh-actions">
                       <li>
                           <a href="" onClick={this.logout.bind(this)}>
@@ -156,7 +178,7 @@ export default class Browse extends React.Component {
               </div>
 
               <div className="feb-container">
-                <ObjectsList dataType={this.dataType.bind(this)} selectPrefix={this.selectPrefix.bind(this)} shareObject={this.shareObject.bind(this)}/>
+                <ObjectsList dataType={this.dataType.bind(this)} selectPrefix={this.selectPrefix.bind(this)}/>
               </div>
 
               <div className="dropup feb-actions">
@@ -168,12 +190,23 @@ export default class Browse extends React.Component {
 
                           <div className="febab-tooltip"><span>Upload Files & Folders</span></div>
                       </a>
-                      <a href="" className="feba-btn feba-bucket">
+                      <a id="make-bucket" href="#" className="feba-btn feba-bucket" onClick={this.showMakeBucketModal.bind(this)}>
                           <i className="fa fa-hdd-o"></i>
                           <div className="febab-tooltip"><span>Create Bucket</span></div>
                       </a>
                   </div>
               </div>
+              <Modal bsSize="small" aria-labelledby="contained-modal-title-sm" show={showMakeBucketModal}
+                onHide={this.hideMakeBucketModal.bind(this)}>
+                <ModalHeader>
+                  Enter the bucket name to be created
+                </ModalHeader>
+                <ModalBody>
+                  <form onSubmit={this.makeBucket.bind(this)}>
+                    <input type="text" className="form-control" autofocus ref="makeBucketRef" placeholder="BucketName"/>
+                  </form>
+                </ModalBody>
+              </Modal>
           </div>
       </div>
     )

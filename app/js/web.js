@@ -41,8 +41,14 @@ export default class Web {
   Logout() {
     delete(localStorage.token)
   }
+  DiskInfo() {
+    return this.makeCall('DiskInfo')
+  }
   ListBuckets() {
     return this.makeCall('ListBuckets')
+  }
+  MakeBucket(args) {
+    return this.makeCall('MakeBucket', args)
   }
   ListObjects(args) {
     return this.makeCall('ListObjects', args)
